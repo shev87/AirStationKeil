@@ -1,0 +1,27 @@
+--cpu Cortex-M3
+"weatherstation\startup_stm32f103xb.o"
+"weatherstation\bme280.o"
+"weatherstation\main.o"
+"weatherstation\stm32f1xx_it.o"
+"weatherstation\stm32f1xx_hal_msp.o"
+"weatherstation\stm32f1xx_hal_gpio_ex.o"
+"weatherstation\stm32f1xx_hal_i2c.o"
+"weatherstation\stm32f1xx_hal_iwdg.o"
+"weatherstation\stm32f1xx_hal_tim.o"
+"weatherstation\stm32f1xx_hal_tim_ex.o"
+"weatherstation\stm32f1xx_hal_uart.o"
+"weatherstation\stm32f1xx_hal.o"
+"weatherstation\stm32f1xx_hal_rcc.o"
+"weatherstation\stm32f1xx_hal_rcc_ex.o"
+"weatherstation\stm32f1xx_hal_gpio.o"
+"weatherstation\stm32f1xx_hal_dma.o"
+"weatherstation\stm32f1xx_hal_cortex.o"
+"weatherstation\stm32f1xx_hal_pwr.o"
+"weatherstation\stm32f1xx_hal_flash.o"
+"weatherstation\stm32f1xx_hal_flash_ex.o"
+"weatherstation\stm32f1xx_hal_exti.o"
+"weatherstation\system_stm32f1xx.o"
+--library_type=microlib --strict --scatter "WeatherStation\WeatherStation.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "WeatherStation.map" -o WeatherStation\WeatherStation.axf
