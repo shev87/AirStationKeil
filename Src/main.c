@@ -54,8 +54,10 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint16_t co2_ppm;
-char str[70];
+uint16_t co2_ppm = 0;
+uint8_t crc = 0;
+char str[23];
+uint8_t strAndroid[1];
 uint8_t strUart[9];
 uint8_t request_CO2[] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};
 float tf = 0.0f, pf = 0.0f, hf = 0.0f, pf_mm = 0.0f;
@@ -115,6 +117,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	BME280_Init();
 	HAL_UART_Receive_IT(&huart1,(uint8_t*) strUart,9);
+	HAL_UART_Receive_IT(&huart2,(uint8_t*) strAndroid,1);
 	HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
@@ -378,6 +381,8 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if (htim == &htim2){
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		sprintf(str, "%d %d %.1f %.1f", co2_ppm, (uint16_t)hf, tf, pf_mm);
+		if (strAndroid[0] == 1) HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), 200);
 		
 	}
 }
@@ -385,12 +390,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	
 	if (huart == &huart1){
-		co2_ppm = strUart[2]*256+strUart[3];
-		sprintf(str, "CO2 = %dppm\r\nHumidity = %.0f\r\nTemperature = %.1f\r\nPressure = %.1f", co2_ppm, hf, tf, pf_mm);
-		HAL_UART_Transmit(&huart2, (uint8_t*)str, 70, 200);
+		crc = 0;
+		static uint32_t count = 0;
+		for (int i = 1; i<8; i++){
+			crc +=strUart[i];
+		}
+		crc = 0xFF - crc + 1;
+		if (crc == strUart[8]){
+			co2_ppm = strUart[2]*256+strUart[3];
+		} else count++; 
+		if (count == 30){
+			count = 0;
+			co2_ppm = 0;
+		}
 		HAL_UART_Receive_IT(&huart1,(uint8_t*) strUart,9);
 	}
-		
+	if (huart == &huart2){
+		HAL_UART_Receive_IT(&huart2,(uint8_t*) strAndroid,1);
+	}		
 }
 /* USER CODE END 4 */
 
